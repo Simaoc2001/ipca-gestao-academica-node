@@ -7,56 +7,150 @@ const app = express();
 const PORT = 3001;
 
 // ============================================================
-// DADOS EM MEMÓRIA (SIMULAÇÃO)
+// DADOS EM MEMÓRIA (SIMULAÇÃO) - ESTRUTURA MONGODB DESNORMALIZADA
 // ============================================================
 let db = {
-    grupos: [
-        { _id: 1, GRUPO: 'ADMIN' },
-        { _id: 2, GRUPO: 'ALUNO' },
-        { _id: 3, GRUPO: 'FUNCIONARIO' }
-    ],
-    users: [
+    // ===== UTILIZADORES =====
+    usuarios: [
         { 
             _id: 1,
             login: 'gestor1',
             password: '$2a$10$TW07a2dkl6dDaI7gdJD9ROatkfGO5spM0ZR3rxXR7czNQ1Tb4FR4e',
-            grupo_id: 1,
+            papel: 'ADMIN',
             nome: 'Gestor Sistema',
-            email: 'gestor@ipca.pt'
+            email: 'gestor@ipca.pt',
+            ativo: true,
+            criadoEm: new Date()
         },
         { 
             _id: 2,
             login: 'aluno1',
             password: '$2a$10$GBO.SNIndIrdAqO0ChdPmOpDBNTA27VKgF5u35PvgdJ.dgQj.n7oy',
-            grupo_id: 2,
+            papel: 'ALUNO',
             nome: 'João Silva',
-            email: 'joao@aluno.ipca.pt'
+            email: 'joao@aluno.ipca.pt',
+            ativo: true,
+            criadoEm: new Date()
         },
         { 
             _id: 3,
             login: 'Funcionario1',
             password: '$2a$10$I7l5XBkqo3BFROR1UdYcQuqiKK4vwHCXI5rBDA/1Bp8yjn3KFJmMW',
-            grupo_id: 3,
+            papel: 'FUNCIONARIO',
             nome: 'Maria Funcionária',
-            email: 'maria@ipca.pt'
+            email: 'maria@ipca.pt',
+            ativo: true,
+            criadoEm: new Date()
         }
     ],
+    
+    // ===== CURSOS COM DISCIPLINAS DESNORMALIZADAS =====
     cursos: [
-        { _id: 1, nome: 'Engenharia Informática', descricao: 'Curso de 3 anos' },
-        { _id: 2, nome: 'Gestão Empresarial', descricao: 'Curso de 3 anos' }
+        { 
+            _id: 1, 
+            nome: 'Engenharia Informática', 
+            descricao: 'Curso de 3 anos',
+            ativo: true,
+            criadoEm: new Date(),
+            disciplinas: [
+                {
+                    _id: 101,
+                    nome: 'Programação Web',
+                    ano: 1,
+                    semestre: 1,
+                    horas: 60,
+                    professor: 'Prof. Técnico'
+                },
+                {
+                    _id: 102,
+                    nome: 'Bases de Dados',
+                    ano: 1,
+                    semestre: 2,
+                    horas: 60,
+                    professor: 'Prof. Técnico'
+                },
+                {
+                    _id: 103,
+                    nome: 'Algoritmos Avançados',
+                    ano: 2,
+                    semestre: 1,
+                    horas: 75,
+                    professor: 'Prof. Técnico'
+                }
+            ]
+        },
+        { 
+            _id: 2, 
+            nome: 'Gestão Empresarial', 
+            descricao: 'Curso de 3 anos',
+            ativo: true,
+            criadoEm: new Date(),
+            disciplinas: [
+                {
+                    _id: 201,
+                    nome: 'Contabilidade',
+                    ano: 1,
+                    semestre: 1,
+                    horas: 60,
+                    professor: 'Prof. Gestão'
+                },
+                {
+                    _id: 202,
+                    nome: 'Economia',
+                    ano: 1,
+                    semestre: 2,
+                    horas: 60,
+                    professor: 'Prof. Gestão'
+                }
+            ]
+        }
     ],
-    disciplinas: [
-        { _id: 1, nome: 'Programação Web', curso_id: 1 },
-        { _id: 2, nome: 'Bases de Dados', curso_id: 1 },
-        { _id: 3, nome: 'Contabilidade', curso_id: 2 }
+    
+    // ===== ALUNOS COM HISTÓRICO ACADÉMICO =====
+    alunos: [
+        {
+            _id: 1001,
+            login: 'ana.costa',
+            nome: 'Ana Costa',
+            email: 'ana@aluno.ipca.pt',
+            curso_id: 1,
+            ano_atual: 1,
+            semestre_atual: 1,
+            ativo: true,
+            matriculadoEm: new Date(),
+            notas: [
+                {
+                    disciplina_id: 101,
+                    disciplina_nome: 'Programação Web',
+                    nota: 16,
+                    data: new Date()
+                }
+            ]
+        }
     ],
-    plano_estudos: [
-        { _id: 1, curso_id: 1, disciplina_id: 1, ano: 1, semestre: 1 },
-        { _id: 2, curso_id: 1, disciplina_id: 2, ano: 1, semestre: 2 }
-    ],
-    alunos: [],
-    pautas: [],
-    notas: []
+    
+    // ===== PAUTAS (RESUMO DE AVALIAÇÕES) =====
+    pautas: [
+        {
+            _id: 1,
+            curso_id: 1,
+            disciplina_id: 101,
+            disciplina_nome: 'Programação Web',
+            ano: 1,
+            semestre: 1,
+            epoca: 'normal',
+            criadaEm: new Date(),
+            alunos: [
+                {
+                    aluno_id: 1001,
+                    aluno_nome: 'Ana Costa',
+                    nota: 16,
+                    presenca: true,
+                    dataExame: new Date()
+                }
+            ]
+        }
+    ]
 };
 
 // ============================================================
@@ -90,15 +184,15 @@ app.post('/api/login', async (req, res) => {
         return res.status(400).json({ error: 'Login e password são obrigatórios' });
     }
     
-    // Encontrar user
-    const user = db.users.find(u => u.login === login);
-    if (!user) {
+    // Encontrar usuario
+    const usuario = db.usuarios.find(u => u.login === login);
+    if (!usuario) {
         return res.status(401).json({ error: 'Utilizador não existe' });
     }
     
     // Verificar password
     try {
-        const isValid = await bcrypt.compare(password, user.password);
+        const isValid = await bcrypt.compare(password, usuario.password);
         if (!isValid) {
             return res.status(401).json({ error: 'Password incorreta' });
         }
@@ -108,11 +202,11 @@ app.post('/api/login', async (req, res) => {
     
     // Guardar na sessão
     req.session.user = {
-        id: user._id,
-        login: user.login,
-        nome: user.nome,
-        grupo_id: user.grupo_id,
-        email: user.email
+        id: usuario._id,
+        login: usuario.login,
+        nome: usuario.nome,
+        papel: usuario.papel,
+        email: usuario.email
     };
     
     res.json({ 
@@ -233,20 +327,37 @@ app.delete('/api/cursos/:id', requireAuth, (req, res) => {
 });
 
 // ============================================================
-// APIs: DISCIPLINAS
+// APIs: DISCIPLINAS (Desnormalizadas dentro de Cursos)
 // ============================================================
+// Obter todas as disciplinas de todos os cursos
 app.get('/api/disciplinas', requireAuth, (req, res) => {
-    res.json(db.disciplinas);
+    const todasDisciplinas = [];
+    db.cursos.forEach(curso => {
+        curso.disciplinas.forEach(disc => {
+            todasDisciplinas.push({
+                ...disc,
+                curso_id: curso._id,
+                curso_nome: curso.nome
+            });
+        });
+    });
+    res.json(todasDisciplinas);
 });
 
+// Adicionar disciplina a um curso
 app.post('/api/disciplinas', requireAuth, (req, res) => {
-    const { nome, curso_id } = req.body;
-    if (!nome || !curso_id) return res.status(400).json({ error: 'Nome e curso obrigatórios' });
+    const { nome, curso_id, ano, semestre, horas, professor } = req.body;
+    if (!nome || !curso_id || !ano || !semestre) {
+        return res.status(400).json({ error: 'Nome, curso, ano e semestre obrigatórios' });
+    }
     
-    const newId = Math.max(...db.disciplinas.map(d => d._id), 0) + 1;
-    const disciplina = { _id: newId, nome, curso_id };
-    db.disciplinas.push(disciplina);
+    const curso = db.cursos.find(c => c._id === parseInt(curso_id));
+    if (!curso) return res.status(404).json({ error: 'Curso não encontrado' });
     
+    const newId = Math.max(...curso.disciplinas.map(d => d._id), 0) + 1;
+    const disciplina = { _id: newId, nome, ano: parseInt(ano), semestre: parseInt(semestre), horas: horas || 60, professor };
+    
+    curso.disciplinas.push(disciplina);
     res.json({ success: true, disciplina });
 });
 
@@ -305,21 +416,56 @@ app.post('/api/alunos', requireAuth, async (req, res) => {
 });
 
 // ============================================================
-// APIs: PAUTAS
+// APIs: PAUTAS (Com dados desnormalizados)
 // ============================================================
 app.get('/api/pautas', requireAuth, (req, res) => {
     res.json(db.pautas);
 });
 
+// Criar nova pauta (folha de avaliação)
 app.post('/api/pautas', requireAuth, (req, res) => {
-    const { disciplina_id, epoca, ano_letivo } = req.body;
-    if (!disciplina_id || !epoca || !ano_letivo) {
+    const { curso_id, disciplina_id, disciplina_nome, ano, semestre, epoca } = req.body;
+    if (!curso_id || !disciplina_id || !ano || !semestre || !epoca) {
         return res.status(400).json({ error: 'Campos obrigatórios' });
     }
     
     const newId = Math.max(...db.pautas.map(p => p._id), 0) + 1;
-    const pauta = { _id: newId, disciplina_id, epoca, ano_letivo, criada_em: new Date() };
+    const pauta = { 
+        _id: newId, 
+        curso_id: parseInt(curso_id),
+        disciplina_id: parseInt(disciplina_id),
+        disciplina_nome: disciplina_nome,
+        ano: parseInt(ano), 
+        semestre: parseInt(semestre),
+        epoca: epoca, 
+        criadaEm: new Date(),
+        alunos: []
+    };
     db.pautas.push(pauta);
+    
+    res.json({ success: true, pauta });
+});
+
+// Adicionar nota a um aluno na pauta
+app.post('/api/pautas/:id/notas', requireAuth, (req, res) => {
+    const pautaId = parseInt(req.params.id);
+    const { aluno_id, aluno_nome, nota } = req.body;
+    
+    const pauta = db.pautas.find(p => p._id === pautaId);
+    if (!pauta) return res.status(404).json({ error: 'Pauta não encontrada' });
+    
+    const alunoExistente = pauta.alunos.find(a => a.aluno_id === parseInt(aluno_id));
+    if (alunoExistente) {
+        alunoExistente.nota = parseInt(nota);
+    } else {
+        pauta.alunos.push({
+            aluno_id: parseInt(aluno_id),
+            aluno_nome: aluno_nome,
+            nota: parseInt(nota),
+            presenca: true,
+            dataExame: new Date()
+        });
+    }
     
     res.json({ success: true, pauta });
 });
