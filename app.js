@@ -61,22 +61,22 @@ app.post('/api/login', async (req, res) => {
         return res.json({ success: false, message: 'Preencha todos os campos.' });
     }
     try {
-        const user = await db.collection('users').findOne({ login: login });
-        if (!user) {
+        const usuario = await db.collection('usuarios').findOne({ login: login });
+        if (!usuario) {
             return res.json({ success: false, message: 'Utilizador não encontrado.' });
         }
 
-        const passwordMatch = await bcrypt.compare(password, user.pwd);
+        const passwordMatch = await bcrypt.compare(password, usuario.password);
         if (!passwordMatch) {
             return res.json({ success: false, message: 'Password incorreta.' });
         }
 
-        const grupo = await db.collection('grupos').findOne({ _id: user.grupo });
-        
         req.session.user = {
-            login: user.login,
-            grupo: user.grupo,
-            grupo_nome: grupo.GRUPO
+            id: usuario._id,
+            login: usuario.login,
+            nome: usuario.nome,
+            papel: usuario.papel,
+            email: usuario.email
         };
 
         res.json({ success: true, message: 'Login bem-sucedido!' });
@@ -211,26 +211,53 @@ app.put('/api/cursos/:id', requireAuth, async (req, res) => {
 });
 
 // ============================================================
-// APIs - DISCIPLINAS
+// APIs - DISCIPLINAS (Desnormalizadas dentro de Cursos)
 // ============================================================
 app.get('/api/disciplinas', requireAuth, async (req, res) => {
     try {
-        const disciplinas = await db.collection('disciplinas').find({}).toArray();
-        res.json(disciplinas);
+        // Obter todas as disciplinas de todos os cursos
+        const cursos = await db.collection('cursos').find({}).toArray();
+        const todasDisciplinas = [];
+        
+        cursos.forEach(curso => {
+            if (curso.disciplinas) {
+                curso.disciplinas.forEach(disc => {
+                    todasDisciplinas.push({
+                        ...disc,
+                        curso_id: curso._id,
+                        curso_nome: curso.nome
+                    });
+                });
+            }
+        });
+        
+        res.json(todasDisciplinas);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
 app.post('/api/disciplinas', requireAuth, async (req, res) => {
-    const { nome } = req.body;
-    if (!nome) return res.status(400).json({ error: 'Nome é obrigatório' });
+    const { nome, curso_id, ano, semestre, horas, professor } = req.body;
+    if (!nome || !curso_id) return res.status(400).json({ error: 'Nome e curso obrigatórios' });
     
     try {
-        const result = await db.collection('disciplinas').insertOne({
-            Nome_disc: nome
-        });
-        res.json({ success: true, id: result.insertedId });
+        const result = await db.collection('cursos').updateOne(
+            { _id: new ObjectId(curso_id) },
+            {
+                $push: {
+                    disciplinas: {
+                        _id: new Date().getTime(),
+                        nome: nome,
+                        ano: parseInt(ano) || 1,
+                        semestre: parseInt(semestre) || 1,
+                        horas: horas || 60,
+                        professor: professor || 'TBD'
+                    }
+                }
+            }
+        );
+        res.json({ success: true, result });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
