@@ -205,7 +205,7 @@
                     return;
                 }
                 const user = await response.json();
-                document.getElementById('userName').textContent = `${user.login} (${user.grupo_nome})`;
+                document.getElementById('userName').textContent = `${user.login} (${user.papel})`;
                 carregarDados();
             } catch (err) {
                 window.location.href = '/login';

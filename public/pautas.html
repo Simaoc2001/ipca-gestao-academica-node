@@ -148,15 +148,15 @@
                 tbody.innerHTML = '';
 
                 pautas.forEach(pauta => {
-                    const data = new Date(pauta.data_criacao).toLocaleDateString('pt-PT');
-                    const disciplina = pauta.disciplina && pauta.disciplina[0] ? pauta.disciplina[0].nome : '-';
-                    const epoca = pauta.epoca && pauta.epoca[0] ? pauta.epoca[0].nome : '-';
+                    const data = new Date(pauta.criadaEm).toLocaleDateString('pt-PT');
+                    const disciplina = pauta.disciplina_nome || '-';
+                    const epoca = pauta.epoca || '-';
                     
                     const row = `
                         <tr>
                             <td>${disciplina}</td>
                             <td>${epoca}</td>
-                            <td>${pauta.ano_letivo}</td>
+                            <td>${pauta.ano || '-'}</td>
                             <td>${pauta.criado_por || '-'}</td>
                             <td>${data}</td>
                             <td>

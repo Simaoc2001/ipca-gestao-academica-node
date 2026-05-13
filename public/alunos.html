@@ -172,13 +172,13 @@
                 alunos.forEach(aluno => {
                     const row = `
                         <tr>
-                            <td>${aluno.nome_completo}</td>
-                            <td>${aluno.email}</td>
-                            <td>${aluno.telefone || '-'}</td>
+                            <td>${aluno.nome || '-'}</td>
+                            <td>${aluno.email || '-'}</td>
+                            <td>-</td>
                             <td>${aluno.curso_id || '-'}</td>
                             <td>
-                                <span class="badge ${aluno.estado === 'aprovada' ? 'badge-success' : 'badge-warning'}">
-                                    ${aluno.estado}
+                                <span class="badge ${aluno.ativo ? 'bg-success' : 'bg-warning'}">
+                                    ${aluno.ativo ? 'Ativo' : 'Inativo'}
                                 </span>
                             </td>
                             <td>

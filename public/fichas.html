@@ -90,15 +90,15 @@
                 tbody.innerHTML = '';
 
                 fichas.forEach(ficha => {
-                    const data = ficha.data_submissao ? new Date(ficha.data_submissao).toLocaleDateString('pt-PT') : '-';
+                    const data = ficha.matriculadoEm ? new Date(ficha.matriculadoEm).toLocaleDateString('pt-PT') : '-';
                     const row = `
                         <tr>
-                            <td>${ficha.nome_completo}</td>
-                            <td>${ficha.email}</td>
+                            <td>${ficha.nome || '-'}</td>
+                            <td>${ficha.email || '-'}</td>
                             <td>${ficha.curso_id || '-'}</td>
                             <td>
-                                <span class="badge badge-${ficha.estado === 'aprovada' ? 'success' : (ficha.estado === 'rejeitada' ? 'danger' : 'warning')}">
-                                    ${ficha.estado}
+                                <span class="badge ${ficha.ativo ? 'bg-success' : 'bg-danger'}">
+                                    ${ficha.ativo ? 'Matriculado' : 'Inativo'}
                                 </span>
                             </td>
                             <td>${data}</td>
