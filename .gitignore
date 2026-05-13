@@ -1,0 +1,42 @@
+# Dependências
+node_modules/
+package-lock.json
+yarn.lock
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# IDE e editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Ficheiros temporários
+tmp/
+temp/
+*.tmp
+
+# Dados de teste (opcional, descomenta se não quiseres guardar dados)
+# data/
+# db/
+
+# Compilados
+dist/
+build/
+*.o
+*.out

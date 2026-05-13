@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - IPCA Gestão Académica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/estilos.css">
+</head>
+<body class="login-page">
+    <div class="container-fluid h-100 d-flex align-items-center justify-content-center">
+        <div class="login-container">
+            <div class="text-center mb-4">
+                <div class="logo-circle">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1 class="mt-3">IPCA</h1>
+                <p class="text-muted">Gestão Académica</p>
+            </div>
+
+            <form id="loginForm" class="login-form">
+                <div class="mb-3">
+                    <label for="login" class="form-label">
+                        <i class="fas fa-user"></i> Utilizador
+                    </label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="login" 
+                        name="login" 
+                        placeholder="Introduza o seu utilizador"
+                        required
+                    >
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <input 
+                        type="password" 
+                        class="form-control" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Introduza a sua password"
+                        required
+                    >
+                </div>
+
+                <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-3">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+            </form>
+
+            <div class="text-center text-muted small">
+                <p>© 2024 IPCA - Instituto Politécnico do Cávado e do Ave</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            const errorAlert = document.getElementById('errorAlert');
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ login, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    errorAlert.textContent = data.message;
+                    errorAlert.classList.remove('d-none');
+                }
+            } catch (err) {
+                errorAlert.textContent = 'Erro ao fazer login: ' + err.message;
+                errorAlert.classList.remove('d-none');
+            }
+        });
+
+        // Esconder alerta ao digitar
+        document.getElementById('login').addEventListener('focus', () => {
+            document.getElementById('errorAlert').classList.add('d-none');
+        });
+    </script>
+</body>
+</html>

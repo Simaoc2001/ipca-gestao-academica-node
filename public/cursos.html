@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursos - IPCA Gestão Académica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/estilos.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-graduation-cap"></i> IPCA
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cursos">Cursos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/disciplinas">Disciplinas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/alunos">Alunos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pautas">Pautas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-danger ms-2" href="/api/logout">
+                            <i class="fas fa-sign-out-alt"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-book"></i> Gestão de Cursos</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCurso">
+                    <i class="fas fa-plus"></i> Novo Curso
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tabelaCursos">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Descrição</th>
+                                    <th>Estado</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Novo Curso -->
+    <div class="modal fade" id="modalCurso" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title">Novo Curso</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formCurso">
+                        <div class="mb-3">
+                            <label for="nomeCurso" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="nomeCurso" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="descricaoCurso" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="descricaoCurso" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarCurso">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container-fluid">
+            <p>&copy; 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function carregarCursos() {
+            try {
+                const response = await fetch('/api/cursos');
+                const cursos = await response.json();
+                const tbody = document.querySelector('#tabelaCursos tbody');
+                tbody.innerHTML = '';
+
+                cursos.forEach(curso => {
+                    const row = `
+                        <tr>
+                            <td>${curso.nome}</td>
+                            <td>${curso.descricao || '-'}</td>
+                            <td>
+                                <span class="badge ${curso.ativo ? 'badge-success' : 'badge-danger'}">
+                                    ${curso.ativo ? 'Ativo' : 'Inativo'}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" onclick="editarCurso('${curso._id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (err) {
+                console.error('Erro ao carregar cursos:', err);
+            }
+        }
+
+        document.getElementById('btnGuardarCurso').addEventListener('click', async () => {
+            const nome = document.getElementById('nomeCurso').value;
+            const descricao = document.getElementById('descricaoCurso').value;
+
+            try {
+                const response = await fetch('/api/cursos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, descricao })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalCurso')).hide();
+                    document.getElementById('formCurso').reset();
+                    carregarCursos();
+                }
+            } catch (err) {
+                console.error('Erro ao guardar curso:', err);
+            }
+        });
+
+        carregarCursos();
+    </script>
+</body>
+</html>

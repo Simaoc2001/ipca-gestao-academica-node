@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pautas - IPCA Gestão Académica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/estilos.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-graduation-cap"></i> IPCA
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cursos">Cursos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/disciplinas">Disciplinas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/alunos">Alunos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pautas">Pautas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-danger ms-2" href="/api/logout">
+                            <i class="fas fa-sign-out-alt"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-chart-bar"></i> Gestão de Pautas</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPauta">
+                    <i class="fas fa-plus"></i> Nova Pauta
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tabelaPautas">
+                            <thead>
+                                <tr>
+                                    <th>Disciplina</th>
+                                    <th>Época</th>
+                                    <th>Ano Letivo</th>
+                                    <th>Criado Por</th>
+                                    <th>Data Criação</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nova Pauta -->
+    <div class="modal fade" id="modalPauta" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nova Pauta</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formPauta">
+                        <div class="mb-3">
+                            <label for="disciplinaPauta" class="form-label">Disciplina</label>
+                            <select class="form-select" id="disciplinaPauta" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="epocaPauta" class="form-label">Época</label>
+                            <select class="form-select" id="epocaPauta" required>
+                                <option value="Normal">Normal</option>
+                                <option value="Recurso">Recurso</option>
+                                <option value="Especial">Especial</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="anoLetivoPauta" class="form-label">Ano Letivo</label>
+                            <input type="text" class="form-control" id="anoLetivoPauta" placeholder="Ex: 2023/2024" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarPauta">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container-fluid">
+            <p>&copy; 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function carregarDisciplinas() {
+            try {
+                const response = await fetch('/api/disciplinas');
+                const disciplinas = await response.json();
+                const select = document.getElementById('disciplinaPauta');
+                
+                disciplinas.forEach(disciplina => {
+                    const option = document.createElement('option');
+                    option.value = disciplina._id;
+                    option.textContent = disciplina.nome;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Erro ao carregar disciplinas:', err);
+            }
+        }
+
+        async function carregarPautas() {
+            try {
+                const response = await fetch('/api/pautas');
+                const pautas = await response.json();
+                const tbody = document.querySelector('#tabelaPautas tbody');
+                tbody.innerHTML = '';
+
+                pautas.forEach(pauta => {
+                    const data = new Date(pauta.data_criacao).toLocaleDateString('pt-PT');
+                    const disciplina = pauta.disciplina && pauta.disciplina[0] ? pauta.disciplina[0].nome : '-';
+                    const epoca = pauta.epoca && pauta.epoca[0] ? pauta.epoca[0].nome : '-';
+                    
+                    const row = `
+                        <tr>
+                            <td>${disciplina}</td>
+                            <td>${epoca}</td>
+                            <td>${pauta.ano_letivo}</td>
+                            <td>${pauta.criado_por || '-'}</td>
+                            <td>${data}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (err) {
+                console.error('Erro ao carregar pautas:', err);
+            }
+        }
+
+        document.getElementById('btnGuardarPauta').addEventListener('click', async () => {
+            const disciplina_id = document.getElementById('disciplinaPauta').value;
+            const epoca = document.getElementById('epocaPauta').value;
+            const ano_letivo = document.getElementById('anoLetivoPauta').value;
+
+            // Mapeamento de épocas para IDs
+            const epocaMap = { 'Normal': 1, 'Recurso': 2, 'Especial': 3 };
+            const epoca_id = epocaMap[epoca];
+
+            try {
+                const response = await fetch('/api/pautas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ disciplina_id, epoca_id, ano_letivo })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalPauta')).hide();
+                    document.getElementById('formPauta').reset();
+                    carregarPautas();
+                }
+            } catch (err) {
+                console.error('Erro ao guardar pauta:', err);
+            }
+        });
+
+        carregarDisciplinas();
+        carregarPautas();
+    </script>
+</body>
+</html>

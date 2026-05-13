@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPCA - Gestão Académica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/estilos.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-graduation-cap"></i> IPCA
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/sobre">Sobre</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contacto">Contacto</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary ms-2" href="/login">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="container-fluid">
+        <div class="hero-section">
+            <h1><i class="fas fa-university"></i> Bem-vindo ao IPCA</h1>
+            <p>Sistema de Gestão Académica do Instituto Politécnico do Cávado e do Ave</p>
+            <a href="/login" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-sign-in-alt"></i> Aceder ao Sistema
+            </a>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="container-fluid py-5">
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-book"></i>
+                    <h5>Gestão de Cursos</h5>
+                    <p>Administre e organize todos os cursos disponíveis na instituição.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-users"></i>
+                    <h5>Gestão de Alunos</h5>
+                    <p>Registar e gerir fichas de alunos com facilidade.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-chart-bar"></i>
+                    <h5>Pautas e Notas</h5>
+                    <p>Registar e acompanhar o desempenho académico dos alunos.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-lock"></i>
+                    <h5>Seguro e Fiável</h5>
+                    <p>Acesso seguro com autenticação e controlo de permissões.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="container-fluid py-5">
+        <div class="hero-section text-center">
+            <h2>Comece a Utilizar o Sistema</h2>
+            <p class="mb-4">Faça o login para aceder a todas as funcionalidades de gestão académica.</p>
+            <a href="/login" class="btn btn-primary btn-lg">
+                <i class="fas fa-sign-in-alt"></i> Fazer Login
+            </a>
+        </div>
+    </div>
+
+    <!-- QR Code Section -->
+    <div class="container-fluid py-5" style="background: rgba(0, 51, 102, 0.1); border-top: 1px solid rgba(0, 102, 204, 0.2); border-bottom: 1px solid rgba(0, 102, 204, 0.2);">
+        <div class="container text-center">
+            <h3 class="mb-4">
+                <i class="fas fa-mobile-alt"></i> Aceda ao Sistema no Telemóvel
+            </h3>
+            <p class="mb-4">Leia o código QR abaixo para aceder rapidamente ao sistema a partir do seu dispositivo móvel:</p>
+            <div class="qr-section">
+                <div id="qrcode" class="mb-3"></div>
+                <p class="qr-url" id="qr-url-text" style="font-size: 0.9rem; color: #666; font-family: monospace; word-break: break-all;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container-fluid">
+            <p>&copy; 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function(){
+            // Gerar URL de acesso
+            var protocolo = window.location.protocol;
+            var host = window.location.hostname;
+            var porta = window.location.port;
+            var url_rede = protocolo + '//' + host + (porta ? ':' + porta : '') + '/login';
+            
+            // Mostrar URL
+            document.getElementById('qr-url-text').textContent = url_rede;
+            
+            // Gerar QR Code usando API QRServer
+            var size = 200;
+            var img = document.createElement('img');
+            img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&data=' + encodeURIComponent(url_rede);
+            img.alt = 'QR Code de acesso';
+            img.style.borderRadius = '8px';
+            img.style.background = 'white';
+            img.style.padding = '10px';
+            img.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+            document.getElementById('qrcode').appendChild(img);
+        })();
+    </script>
+</body>
+</html>

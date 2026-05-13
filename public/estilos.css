@@ -1,0 +1,520 @@
+:root {
+    --primary-color: #003366;
+    --secondary-color: #0066cc;
+    --accent-color: #ff6600;
+    --dark-bg: #0a0a0a;
+    --card-bg: #1a1a2e;
+    --text-light: #eee;
+    --border-color: #333;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-bg) 100%);
+    color: var(--text-light);
+}
+
+/* ============================================================
+LOGIN PAGE
+============================================================ */
+.login-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #003366 0%, #001a4d 50%, #0a0a0a 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(0, 102, 204, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.login-container {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 102, 204, 0.2);
+    border-radius: 20px;
+    padding: 50px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideDown 0.5s ease-out;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.logo-circle {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 40px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 102, 204, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 10px 30px rgba(0, 102, 204, 0.3);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 10px 40px rgba(0, 102, 204, 0.5);
+    }
+}
+
+.login-form .form-control {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 102, 204, 0.3);
+    color: var(--text-light);
+    padding: 12px 15px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.login-form .form-control:focus {
+    background: rgba(0, 102, 204, 0.1);
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 20px rgba(0, 102, 204, 0.3);
+    color: var(--text-light);
+}
+
+.login-form .form-label {
+    color: var(--text-light);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.login-form .form-label i {
+    margin-right: 8px;
+    color: var(--secondary-color);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    border: none;
+    padding: 12px 20px;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 102, 204, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* ============================================================
+NAVBAR
+============================================================ */
+.navbar {
+    background: rgba(10, 10, 10, 0.95) !important;
+    border-bottom: 1px solid rgba(0, 102, 204, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-weight: 800;
+    font-size: 24px;
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.nav-link {
+    color: var(--text-light) !important;
+    transition: all 0.3s ease;
+    position: relative;
+    margin: 0 10px;
+}
+
+.nav-link:hover {
+    color: var(--secondary-color) !important;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+/* ============================================================
+DASHBOARD
+============================================================ */
+.dashboard-container {
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.card {
+    background: rgba(26, 26, 46, 0.8) !important;
+    border: 1px solid rgba(0, 102, 204, 0.2) !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    color: var(--text-light);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 102, 204, 0.3);
+}
+
+.card-header {
+    background: linear-gradient(135deg, rgba(0, 102, 204, 0.15), rgba(255, 102, 0, 0.1)) !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(0, 102, 204, 0.2) !important;
+}
+
+.card-title {
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+/* ============================================================
+TABLES
+============================================================ */
+.table {
+    color: var(--text-light);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 102, 204, 0.1);
+}
+
+.table thead {
+    background: rgba(0, 102, 204, 0.15);
+    border-bottom: 2px solid rgba(0, 102, 204, 0.3);
+}
+
+.table thead th {
+    color: #000 !important;
+    font-weight: 600;
+    border: none;
+}
+
+.table td {
+    border-color: rgba(0, 102, 204, 0.1);
+    vertical-align: middle;
+}
+
+/* ============================================================
+HERO SECTION
+============================================================ */
+.hero-section {
+    background: linear-gradient(135deg, rgba(0, 102, 204, 0.2), rgba(255, 102, 0, 0.1)),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0,102,204,0.1)" stroke-width="1"/></pattern></defs><rect width="1200" height="600" fill="rgba(0,51,102,0.5)"/><rect width="1200" height="600" fill="url(%23grid)"/></svg>');
+    border-radius: 20px;
+    padding: 60px 40px;
+    margin: 30px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    animation: fadeInDown 0.8s ease-out;
+}
+
+.hero-section p {
+    font-size: 1.2rem;
+    color: rgba(238, 238, 238, 0.8);
+    animation: fadeInUp 0.8s ease-out 0.2s backwards;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================
+FEATURE CARDS
+============================================================ */
+.feature-card {
+    background: rgba(26, 26, 46, 0.8);
+    border: 1px solid rgba(0, 102, 204, 0.2);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    color: var(--text-light);
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--secondary-color);
+    box-shadow: 0 20px 50px rgba(0, 102, 204, 0.2);
+}
+
+.feature-card i {
+    font-size: 3rem;
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+}
+
+.feature-card h5 {
+    margin: 15px 0;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.feature-card p {
+    color: rgba(238, 238, 238, 0.7);
+    margin: 0;
+}
+
+/* ============================================================
+BUTTONS
+============================================================ */
+.btn {
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color)) !important;
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 102, 204, 0.3);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--secondary-color) !important;
+    color: var(--secondary-color) !important;
+}
+
+.btn-outline-primary:hover {
+    background: var(--secondary-color) !important;
+    color: white !important;
+}
+
+.btn-danger {
+    background: #e74c3c !important;
+    border: none;
+}
+
+.btn-danger:hover {
+    background: #c0392b !important;
+}
+
+/* ============================================================
+FORMS
+============================================================ */
+.form-control,
+.form-select {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(0, 102, 204, 0.2) !important;
+    color: var(--text-light) !important;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background: rgba(0, 102, 204, 0.1) !important;
+    border-color: var(--secondary-color) !important;
+    box-shadow: 0 0 20px rgba(0, 102, 204, 0.3) !important;
+    color: var(--text-light) !important;
+}
+
+.form-label {
+    color: var(--text-light);
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+/* ============================================================
+BADGES
+============================================================ */
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.badge-primary {
+    background: linear-gradient(135deg, var(--secondary-color), rgba(0, 102, 204, 0.6)) !important;
+}
+
+.badge-success {
+    background: #27ae60 !important;
+}
+
+.badge-warning {
+    background: #f39c12 !important;
+    color: white !important;
+}
+
+.badge-danger {
+    background: #e74c3c !important;
+}
+
+/* ============================================================
+FOOTER
+============================================================ */
+footer {
+    background: rgba(10, 10, 10, 0.95);
+    border-top: 1px solid rgba(0, 102, 204, 0.2);
+    padding: 30px 0;
+    color: rgba(238, 238, 238, 0.7);
+    text-align: center;
+    margin-top: 50px;
+}
+
+/* ============================================================
+ALERTS
+============================================================ */
+.alert {
+    border: none;
+    border-radius: 10px;
+    border-left: 4px solid;
+}
+
+.alert-success {
+    background: rgba(39, 174, 96, 0.1);
+    color: #27ae60;
+    border-left-color: #27ae60;
+}
+
+.alert-danger {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border-left-color: #e74c3c;
+}
+
+.alert-info {
+    background: rgba(0, 102, 204, 0.1);
+    color: var(--secondary-color);
+    border-left-color: var(--secondary-color);
+}
+
+.alert-warning {
+    background: rgba(243, 156, 18, 0.1);
+    color: #f39c12;
+    border-left-color: #f39c12;
+}
+
+/* ============================================================
+ANIMATIONS
+============================================================ */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* ============================================================
+RESPONSIVE
+============================================================ */
+@media (max-width: 768px) {
+    .login-container {
+        padding: 30px;
+    }
+
+    .hero-section {
+        padding: 40px 20px;
+    }
+
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+
+    .feature-card {
+        margin-bottom: 20px;
+    }
+
+    .navbar {
+        padding: 0.5rem 0;
+    }
+
+    .nav-link {
+        margin: 5px 0;
+    }
+}

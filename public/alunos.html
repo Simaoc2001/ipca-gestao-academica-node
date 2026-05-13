@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alunos - IPCA Gestão Académica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/estilos.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-graduation-cap"></i> IPCA
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cursos">Cursos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/disciplinas">Disciplinas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/alunos">Alunos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pautas">Pautas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-danger ms-2" href="/api/logout">
+                            <i class="fas fa-sign-out-alt"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-container">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-users"></i> Gestão de Alunos</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAluno">
+                    <i class="fas fa-plus"></i> Novo Aluno
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tabelaAlunos">
+                            <thead>
+                                <tr>
+                                    <th>Nome Completo</th>
+                                    <th>Email</th>
+                                    <th>Telefone</th>
+                                    <th>Curso</th>
+                                    <th>Estado</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Novo Aluno -->
+    <div class="modal fade" id="modalAluno" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title">Novo Aluno</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAluno">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="loginAluno" class="form-label">Login</label>
+                                <input type="text" class="form-control" id="loginAluno" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="nomeAluno" class="form-label">Nome Completo</label>
+                                <input type="text" class="form-control" id="nomeAluno" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="emailAluno" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="emailAluno" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="passwordAluno" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="passwordAluno" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="telefoneAluno" class="form-label">Telefone</label>
+                                <input type="tel" class="form-control" id="telefoneAluno">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="dataNascimentoAluno" class="form-label">Data de Nascimento</label>
+                                <input type="date" class="form-control" id="dataNascimentoAluno">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="moradaAluno" class="form-label">Morada</label>
+                            <input type="text" class="form-control" id="moradaAluno">
+                        </div>
+                        <div class="mb-3">
+                            <label for="cursoAluno" class="form-label">Curso</label>
+                            <select class="form-select" id="cursoAluno" required></select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarAluno">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container-fluid">
+            <p>&copy; 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function carregarCursos() {
+            try {
+                const response = await fetch('/api/cursos');
+                const cursos = await response.json();
+                const select = document.getElementById('cursoAluno');
+                
+                cursos.forEach(curso => {
+                    const option = document.createElement('option');
+                    option.value = curso._id;
+                    option.textContent = curso.nome;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Erro ao carregar cursos:', err);
+            }
+        }
+
+        async function carregarAlunos() {
+            try {
+                const response = await fetch('/api/alunos');
+                const alunos = await response.json();
+                const tbody = document.querySelector('#tabelaAlunos tbody');
+                tbody.innerHTML = '';
+
+                alunos.forEach(aluno => {
+                    const row = `
+                        <tr>
+                            <td>${aluno.nome_completo}</td>
+                            <td>${aluno.email}</td>
+                            <td>${aluno.telefone || '-'}</td>
+                            <td>${aluno.curso_id || '-'}</td>
+                            <td>
+                                <span class="badge ${aluno.estado === 'aprovada' ? 'badge-success' : 'badge-warning'}">
+                                    ${aluno.estado}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (err) {
+                console.error('Erro ao carregar alunos:', err);
+            }
+        }
+
+        document.getElementById('btnGuardarAluno').addEventListener('click', async () => {
+            const login = document.getElementById('loginAluno').value;
+            const nome_completo = document.getElementById('nomeAluno').value;
+            const email = document.getElementById('emailAluno').value;
+            const password = document.getElementById('passwordAluno').value;
+            const telefone = document.getElementById('telefoneAluno').value;
+            const morada = document.getElementById('moradaAluno').value;
+            const data_nascimento = document.getElementById('dataNascimentoAluno').value;
+            const curso_id = document.getElementById('cursoAluno').value;
+
+            try {
+                const response = await fetch('/api/alunos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ login, nome_completo, email, password, telefone, morada, data_nascimento, curso_id })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalAluno')).hide();
+                    document.getElementById('formAluno').reset();
+                    carregarAlunos();
+                }
+            } catch (err) {
+                console.error('Erro ao guardar aluno:', err);
+            }
+        });
+
+        carregarCursos();
+        carregarAlunos();
+    </script>
+</body>
+</html>
