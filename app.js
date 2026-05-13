@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const { MongoClient, ObjectId } = require('mongodb');
@@ -5,12 +6,16 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // ============================================================
 // CONFIGURAÇÃO MONGODB
 // ============================================================
-const mongoUri = "mongodb://a35705_db_user:simaopedro@ac-lzdkvxi-shard-00-00.ottvzzm.mongodb.net:27017,ac-lzdkvxi-shard-00-01.ottvzzm.mongodb.net:27017,ac-lzdkvxi-shard-00-02.ottvzzm.mongodb.net:27017/?ssl=true&replicaSet=atlas-ou68hs-shard-0&authSource=admin&appName=Cluster0";
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+    console.error('❌ MONGODB_URI não configurado em .env');
+    process.exit(1);
+}
 const client = new MongoClient(mongoUri);
 
 let db = null;
@@ -34,7 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-    secret: 'ipca_secret_key_2024',
+    secret: process.env.SESSION_SECRET || 'ipca_secret_key_2024',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 1800000 } // 30 minutos
