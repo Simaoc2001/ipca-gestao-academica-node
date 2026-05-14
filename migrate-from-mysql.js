@@ -1,5 +1,6 @@
 const { MongoClient } = require('mongodb');
 const mysql = require('mysql2/promise');
+const bcrypt = require('bcryptjs');
 
 const mongoUri = "mongodb://a35705_db_user:simaopedro@ac-lzdkvxi-shard-00-00.ottvzzm.mongodb.net:27017,ac-lzdkvxi-shard-00-01.ottvzzm.mongodb.net:27017,ac-lzdkvxi-shard-00-02.ottvzzm.mongodb.net:27017/?ssl=true&replicaSet=atlas-ou68hs-shard-0&authSource=admin&appName=Cluster0";
 
@@ -50,22 +51,37 @@ async function migrate() {
         console.log('👥 A migrar utilizadores...');
         const [users] = await pool.execute('SELECT * FROM users');
         
-        const usersCollection = db.collection('users');
+        const usuariosCollection = db.collection('usuarios');
         try {
-            await usersCollection.drop();
+            await usuariosCollection.drop();
             console.log('   Coleção anterior deletada');
         } catch (e) {}
         
         if (users.length > 0) {
-            const usersData = users.map(u => ({
-                login: u.login,
-                pwd: u.pwd,
-                grupo: u.grupo,
-                criadoEm: new Date()
-            }));
+            const usuariosData = [];
+            for (const u of users) {
+                // Mapear papel (grupo -> papel)
+                let papel = 'ALUNO';
+                if (u.grupo === 1) papel = 'ADMIN';
+                else if (u.grupo === 2) papel = 'FUNCIONARIO';
+                else if (u.grupo === 3) papel = 'ALUNO';
+                
+                // Gerar hash da password usando o login como password padrão
+                const passwordHash = await bcrypt.hash(u.login, 10);
+                
+                usuariosData.push({
+                    login: u.login,
+                    password: passwordHash,
+                    papel: papel,
+                    nome: u.nome || u.login,
+                    email: u.email || '',
+                    ativo: 1,
+                    criadoEm: new Date()
+                });
+            }
             
-            await usersCollection.insertMany(usersData);
-            console.log(`   ✅ ${usersData.length} utilizadores migrados\n`);
+            await usuariosCollection.insertMany(usuariosData);
+            console.log(`   ✅ ${usuariosData.length} utilizadores migrados\n`);
         }
 
         // ============================================================
@@ -276,7 +292,7 @@ async function migrate() {
         // ============================================================
         console.log('🔑 A criar índices...');
         
-        await usersCollection.createIndex({ login: 1 }, { unique: true });
+        await usuariosCollection.createIndex({ login: 1 }, { unique: true });
         await gruposCollection.createIndex({ GRUPO: 1 });
         await cursosCollection.createIndex({ Nome: 1 });
         await disciplinasCollection.createIndex({ Nome_disc: 1 });

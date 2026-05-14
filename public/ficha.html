@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Aluno - IPCA Gestão Académica</title>
+    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-brand">
+                <div class="brand-icon">IP</div>
+                <h1>IPCA <small>Gestão Académica</small></h1>
+            </div>
+            <nav>
+                <a href="dashboard">Dashboard</a>
+                <a href="logout" class="btn btn-sm">Sair</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <h2><i class="fas fa-file-alt"></i> Ficha de Aluno</h2>
+            <p>Preencha e atualize os seus dados pessoais.</p>
+        </div>
+
+        <div id="mensagens"></div>
+
+        <div class="ficha-top">
+            <div class="ficha-content">
+                <form id="formularioFicha" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="nome">Nome Completo *</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="text" id="telefone" name="telefone">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="morada">Morada</label>
+                        <textarea id="morada" name="morada"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dataNascimento">Data de Nascimento *</label>
+                        <input type="date" id="dataNascimento" name="dataNascimento" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="curso">Curso Pretendido</label>
+                        <select id="curso" name="curso">
+                            <option value="">-- Selecione um curso --</option>
+                        </select>
+                    </div>
+
+                    <hr>
+
+                    <div class="acoes-form">
+                        <button type="button" onclick="guardarRascunho()" class="btn">
+                            <i class="fas fa-save"></i> Guardar como Rascunho
+                        </button>
+                        <button type="button" onclick="submeterValidacao()" class="btn btn-success">
+                            <i class="fas fa-check"></i> Submeter para Validação
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="student-photo-wrapper">
+                <div class="form-group">
+                    <label for="foto">Fotografia</label>
+                    <div id="previewFoto" style="margin-bottom: 1rem;"></div>
+                    <input type="file" id="foto" name="foto" accept=".jpg,.jpeg,.png" onchange="previewFoto()">
+                    <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">
+                        Máximo 2MB (JPG ou PNG)
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Carregar dados da ficha ao abrir página
+        document.addEventListener('DOMContentLoaded', async () => {
+            await carregarCursos();
+            await carregarFicha();
+        });
+
+        // Carregar lista de cursos
+        async function carregarCursos() {
+            try {
+                const response = await fetch('/api/cursos');
+                const cursos = await response.json();
+                const select = document.getElementById('curso');
+                
+                cursos.forEach(curso => {
+                    const option = document.createElement('option');
+                    option.value = curso._id || curso.id;
+                    option.textContent = curso.nome;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar cursos:', error);
+            }
+        }
+
+        // Carregar ficha existente
+        async function carregarFicha() {
+            try {
+                const response = await fetch('/api/ficha');
+                if (response.ok) {
+                    const ficha = await response.json();
+                    document.getElementById('nome').value = ficha.nome || '';
+                    document.getElementById('email').value = ficha.email || '';
+                    document.getElementById('telefone').value = ficha.telefone || '';
+                    document.getElementById('morada').value = ficha.morada || '';
+                    document.getElementById('dataNascimento').value = ficha.dataNascimento || '';
+                    document.getElementById('curso').value = ficha.curso || '';
+                    
+                    if (ficha.foto) {
+                        document.getElementById('previewFoto').innerHTML = 
+                            `<img src="${ficha.foto}" class="foto-preview" alt="Foto do aluno">`;
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar ficha:', error);
+            }
+        }
+
+        // Preview da foto
+        function previewFoto() {
+            const input = document.getElementById('foto');
+            const preview = document.getElementById('previewFoto');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Validar tamanho
+                if (file.size > 2 * 1024 * 1024) {
+                    mostrarMensagem('Erro: Imagem não pode ter mais de 2MB', 'erro');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" class="foto-preview" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Guardar como rascunho
+        async function guardarRascunho() {
+            await salvarFicha('rascunho');
+        }
+
+        // Submeter para validação
+        async function submeterValidacao() {
+            await salvarFicha('submetida');
+        }
+
+        // Salvar ficha
+        async function salvarFicha(estado) {
+            const formData = new FormData();
+            formData.append('nome', document.getElementById('nome').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('telefone', document.getElementById('telefone').value);
+            formData.append('morada', document.getElementById('morada').value);
+            formData.append('dataNascimento', document.getElementById('dataNascimento').value);
+            formData.append('curso', document.getElementById('curso').value);
+            formData.append('estado', estado);
+
+            // Adicionar foto se foi selecionada
+            const fotoInput = document.getElementById('foto');
+            if (fotoInput.files[0]) {
+                formData.append('foto', fotoInput.files[0]);
+            }
+
+            try {
+                const response = await fetch('/api/ficha', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    mostrarMensagem(
+                        estado === 'submetida' 
+                            ? 'Ficha submetida com sucesso!' 
+                            : 'Ficha guardada com sucesso!',
+                        'sucesso'
+                    );
+                    
+                    // Redirecionar após 2 segundos se foi submetida
+                    if (estado === 'submetida') {
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 2000);
+                    }
+                } else {
+                    mostrarMensagem(result.erro || 'Erro ao salvar ficha', 'erro');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarMensagem('Erro ao salvar ficha', 'erro');
+            }
+        }
+
+        // Mostrar mensagem
+        function mostrarMensagem(texto, tipo) {
+            const div = document.createElement('div');
+            div.className = tipo;
+            div.textContent = texto;
+            
+            const container = document.getElementById('mensagens');
+            container.innerHTML = '';
+            container.appendChild(div);
+            
+            // Auto-remover após 5 segundos
+            setTimeout(() => {
+                div.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

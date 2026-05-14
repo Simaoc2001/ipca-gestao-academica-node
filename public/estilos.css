@@ -715,6 +715,193 @@ table td a {
     color: var(--text-secondary);
 }
 
+/* ===== FICHA DE ALUNO ===== */
+.ficha-top {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.ficha-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.ficha-content form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: var(--bg);
+    transition: all var(--transition);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-group small {
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.student-photo-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    height: fit-content;
+}
+
+.student-photo-wrapper .form-group {
+    width: 100%;
+}
+
+#previewFoto {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 180px;
+    background: var(--bg);
+    border-radius: var(--radius);
+    border: 2px dashed var(--border);
+    margin-bottom: 1rem;
+    padding: 1rem;
+}
+
+.foto-preview {
+    max-width: 160px;
+    max-height: 160px;
+    border-radius: var(--radius);
+    object-fit: cover;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+#foto {
+    width: 100%;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+}
+
+.acoes-form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.acoes-form button {
+    flex: 1;
+    min-width: 180px;
+    padding: 0.875rem 1.5rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+#mensagens {
+    margin-bottom: 1.5rem;
+}
+
+#mensagens.sucesso,
+#mensagens.erro,
+#mensagens.aviso {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
+    border-left: 4px solid;
+    font-weight: 500;
+}
+
+#mensagens.sucesso {
+    background: var(--success-light);
+    border-left-color: var(--success);
+    color: var(--success-dark);
+}
+
+#mensagens.erro {
+    background: var(--danger-light);
+    border-left-color: var(--danger);
+    color: var(--danger-dark);
+}
+
+#mensagens.aviso {
+    background: var(--warning-light);
+    border-left-color: var(--warning);
+    color: var(--text);
+}
+
+@media (max-width: 768px) {
+    .ficha-top {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .ficha-content,
+    .student-photo-wrapper {
+        padding: 1.5rem;
+    }
+
+    .acoes-form {
+        flex-direction: column;
+    }
+
+    .acoes-form button {
+        width: 100%;
+    }
+}
+
 .badge-warning {
     background: var(--warning-light);
     color: #92400e;

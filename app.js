@@ -4,6 +4,8 @@ const path = require('path');
 const { MongoClient, ObjectId } = require('mongodb');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -37,6 +39,35 @@ async function conectarMongoDB() {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Configurar multer para upload de ficheiros
+const uploadDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'foto-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Apenas JPG e PNG são permitidos'));
+        }
+    }
+});
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'ipca_secret_key_2024',
@@ -150,6 +181,10 @@ app.get('/alunos', requireAuth, (req, res) => {
 
 app.get('/fichas', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'fichas.html'));
+});
+
+app.get('/ficha', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'ficha.html'));
 });
 
 app.get('/pautas', requireAuth, (req, res) => {
@@ -380,8 +415,79 @@ app.post('/api/pautas', requireAuth, async (req, res) => {
     }
 });
 
+// ============================================================// APIs - FICHA DE ALUNO
 // ============================================================
-// INICIALIZAR SERVIDOR
+
+// GET - Obter ficha do aluno logado
+app.get('/api/ficha', requireAuth, async (req, res) => {
+    try {
+        const ficha = await db.collection('ficha_aluno').findOne({ login: req.session.user.login });
+        if (!ficha) {
+            return res.json({});
+        }
+        res.json(ficha);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST - Salvar ficha do aluno com upload de foto
+app.post('/api/ficha', requireAuth, upload.single('foto'), async (req, res) => {
+    try {
+        const { nome, email, telefone, morada, dataNascimento, curso, estado } = req.body;
+        const login = req.session.user.login;
+
+        // Validações
+        if (!nome || !email || !dataNascimento) {
+            if (req.file) {
+                fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({ erro: 'Preencha todos os campos obrigatórios.' });
+        }
+
+        // Preparar dados da ficha
+        const fichaData = {
+            login: login,
+            nome: nome,
+            email: email,
+            telefone: telefone || '',
+            morada: morada || '',
+            dataNascimento: dataNascimento,
+            curso: curso || null,
+            estado: estado || 'rascunho',
+            dataAtualizacao: new Date()
+        };
+
+        // Adicionar foto se foi feito upload
+        if (req.file) {
+            fichaData.foto = '/uploads/' + req.file.filename;
+        }
+
+        // Se foi submetida, adicionar data de submissão
+        if (estado === 'submetida') {
+            fichaData.dataSubmissao = new Date();
+        }
+
+        // Atualizar ou inserir ficha
+        const resultado = await db.collection('ficha_aluno').updateOne(
+            { login: login },
+            { $set: fichaData },
+            { upsert: true }
+        );
+
+        res.json({ 
+            success: true, 
+            message: estado === 'submetida' ? 'Ficha submetida com sucesso!' : 'Ficha guardada com sucesso!' 
+        });
+    } catch (err) {
+        if (req.file) {
+            fs.unlinkSync(req.file.path);
+        }
+        res.status(500).json({ erro: 'Erro ao salvar ficha: ' + err.message });
+    }
+});
+
+// ============================================================// INICIALIZAR SERVIDOR
 // ============================================================
 async function iniciarServidor() {
     await conectarMongoDB();
