@@ -506,6 +506,13 @@ select {
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     padding-right: 2.25rem;
+    color: var(--text);
+}
+
+select option {
+    background-color: var(--surface);
+    color: var(--text);
+    padding: 0.5rem;
 }
 
 /* ===== TABELAS ===== */
