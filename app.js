@@ -703,6 +703,42 @@ app.post('/api/ficha', requireAuth, upload.single('foto'), async (req, res) => {
     }
 });
 
+// GET - Planos de estudo
+app.get('/api/planos-estudo', async (req, res) => {
+    try {
+        const planos = await db.collection('plano_estudos').find({}).toArray();
+        res.json(planos || []);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST - Criar novo plano de estudo
+app.post('/api/planos-estudo', requireAuth, async (req, res) => {
+    try {
+        if (req.session.user.papel !== 'ADMIN') {
+            return res.status(403).json({ error: 'Sem permissão' });
+        }
+
+        const { cursoId, nomeCurso, semestre, disciplinas, creditos } = req.body;
+
+        const novoPlano = {
+            cursoId: cursoId,
+            nomeCurso: nomeCurso,
+            semestre: parseInt(semestre),
+            disciplinas: disciplinas,
+            creditos: parseInt(creditos),
+            ativo: true,
+            dataCriacao: new Date()
+        };
+
+        const resultado = await db.collection('plano_estudos').insertOne(novoPlano);
+        res.json({ success: true, id: resultado.insertedId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ============================================================// INICIALIZAR SERVIDOR
 // ============================================================
 async function iniciarServidor() {

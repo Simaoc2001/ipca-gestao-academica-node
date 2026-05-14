@@ -3,15 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerir Planos de Estudo - IPCA Gestão Académica</title>
+    <title>Planos de Estudo - IPCA Gestão Académica</title>
     <link rel="stylesheet" href="/estilos.css">
     <style>
-        .admin-container { max-width: 1000px; margin: 2rem auto; padding: 2rem; }
-        .admin-title { font-size: 2rem; margin-bottom: 2rem; color: var(--primary-color); }
-        .admin-content { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
-        .btn-group { display: flex; gap: 1rem; margin-bottom: 2rem; }
-        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 4px; background-color: var(--primary-color); color: white; cursor: pointer; font-weight: 600; }
-        .message { text-align: center; padding: 2rem; color: #666; }
+        .admin-container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .admin-title { font-size: 1.8rem; margin-bottom: 2rem; color: var(--primary-color); font-weight: 700; }
+        .admin-content { background: white; padding: 2.5rem; border-radius: 8px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); }
+        .btn-group { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; background-color: var(--primary-color); color: white; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .btn:hover { background-color: #0d47a1; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.3); }
+        .btn-secondary { background-color: #6c757d; }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-small { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: var(--primary-color); color: white; padding: 1rem; text-align: left; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
+        td { padding: 1.2rem 1rem; border-bottom: 1px solid #e0e0e0; }
+        tbody tr:hover { background-color: #f5f5f5; }
+        tbody tr:last-child td { border-bottom: none; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background-color: white; padding: 2rem; border-radius: 8px; width: 90%; max-width: 600px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .modal-header { font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--primary-color); font-weight: 700; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 1rem; box-sizing: border-box; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1); }
+        .modal-footer { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; }
+        .status-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
+        .status-active { background-color: #d4edda; color: #155724; }
+        .status-inactive { background-color: #f8d7da; color: #721c24; }
+        .empty-state { text-align: center; padding: 3rem; color: #999; }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
     </style>
 </head>
 <body>
@@ -27,19 +49,212 @@
             </nav>
         </div>
     </banner>
+
     <div class="admin-container">
         <h2 class="admin-title">Planos de Estudo</h2>
         <div class="admin-content">
             <div class="btn-group">
-                <button class="btn">+ Novo Plano</button>
+                <button class="btn" onclick="abrirModalNovoPlano()">+ Novo Plano</button>
             </div>
-            <div class="message">
-                <p>Gestão de planos de estudo - Selecione um curso para editar seu plano</p>
-            </div>
+
+            <table id="planosTable">
+                <thead>
+                    <tr>
+                        <th>Curso</th>
+                        <th>Semestre</th>
+                        <th>Disciplinas</th>
+                        <th>Créditos</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="planosList">
+                    <tr><td colspan="6" style="text-align: center;">Carregando planos de estudo...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
+
+    <!-- Modal Novo/Editar Plano -->
+    <div id="modalPlano" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Novo Plano de Estudo</div>
+            <form id="formularioPlano">
+                <div class="form-group">
+                    <label for="plano_curso">Curso *</label>
+                    <select id="plano_curso" required>
+                        <option value="">-- Selecione um curso --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="plano_semestre">Semestre *</label>
+                    <select id="plano_semestre" required>
+                        <option value="">-- Selecione um semestre --</option>
+                        <option value="1">1º Semestre</option>
+                        <option value="2">2º Semestre</option>
+                        <option value="3">3º Semestre</option>
+                        <option value="4">4º Semestre</option>
+                        <option value="5">5º Semestre</option>
+                        <option value="6">6º Semestre</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="plano_disciplinas">Disciplinas (separadas por vírgula) *</label>
+                    <textarea id="plano_disciplinas" rows="4" placeholder="Ex: Matemática, Programação, Bases de Dados" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="plano_creditos">Créditos ECTS *</label>
+                    <input type="number" id="plano_creditos" min="0" max="60" required>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="fecharModalPlano()">Cancelar</button>
+                    <button type="submit" class="btn">Guardar Plano</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <footer class="footer">
         <p>© 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
     </footer>
+
+    <script>
+        // Carregar planos ao abrir página
+        document.addEventListener('DOMContentLoaded', async () => {
+            await carregarCursos();
+            await carregarPlanos();
+        });
+
+        // Carregar lista de cursos
+        async function carregarCursos() {
+            try {
+                const response = await fetch('/api/cursos');
+                const cursos = await response.json();
+                const select = document.getElementById('plano_curso');
+                
+                cursos.forEach(curso => {
+                    const option = document.createElement('option');
+                    option.value = curso._id || curso.ID;
+                    option.textContent = curso.Nome;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar cursos:', error);
+            }
+        }
+
+        // Carregar planos de estudo
+        async function carregarPlanos() {
+            try {
+                const response = await fetch('/api/planos-estudo');
+                const planos = await response.json();
+                const lista = document.getElementById('planosList');
+                
+                if (!planos || planos.length === 0) {
+                    lista.innerHTML = `
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📚</div>
+                                    <p>Nenhum plano de estudo registado. Crie um novo clicando em "+ Novo Plano".</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                lista.innerHTML = planos.map(p => `
+                    <tr>
+                        <td><strong>${p.nomeCurso || 'N/A'}</strong></td>
+                        <td>${p.semestre ? p.semestre + 'º Semestre' : 'N/A'}</td>
+                        <td>${p.disciplinas ? p.disciplinas.split(',').length : 0}</td>
+                        <td>${p.creditos || 0} ECTS</td>
+                        <td><span class="status-badge ${p.ativo ? 'status-active' : 'status-inactive'}">${p.ativo ? '✓ Ativo' : '✗ Inativo'}</span></td>
+                        <td>
+                            <button class="btn btn-small" onclick="editarPlano('${p._id}')">Editar</button>
+                            <button class="btn btn-small btn-secondary" onclick="apagarPlano('${p._id}')" style="margin-left: 0.5rem;">Apagar</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                document.getElementById('planosList').innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #d32f2f;">Erro ao carregar dados</td>
+                    </tr>
+                `;
+                console.error('Erro:', error);
+            }
+        }
+
+        // Abrir modal novo plano
+        function abrirModalNovoPlano() {
+            document.getElementById('formularioPlano').reset();
+            document.querySelector('.modal-header').textContent = 'Novo Plano de Estudo';
+            document.getElementById('modalPlano').classList.add('show');
+        }
+
+        // Fechar modal
+        function fecharModalPlano() {
+            document.getElementById('modalPlano').classList.remove('show');
+        }
+
+        // Submeter formulário
+        document.getElementById('formularioPlano').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const plano = {
+                cursoId: document.getElementById('plano_curso').value,
+                nomeCurso: document.getElementById('plano_curso').options[document.getElementById('plano_curso').selectedIndex].text,
+                semestre: document.getElementById('plano_semestre').value,
+                disciplinas: document.getElementById('plano_disciplinas').value,
+                creditos: document.getElementById('plano_creditos').value,
+                ativo: true,
+                dataCriacao: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch('/api/planos-estudo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(plano)
+                });
+
+                if (response.ok) {
+                    alert('Plano de estudo criado com sucesso!');
+                    fecharModalPlano();
+                    await carregarPlanos();
+                } else {
+                    alert('Erro ao criar plano de estudo');
+                }
+            } catch (error) {
+                alert('Erro ao guardar: ' + error.message);
+            }
+        });
+
+        // Função placeholder para editar
+        function editarPlano(id) {
+            alert('Funcionalidade de edição em desenvolvimento');
+        }
+
+        // Função placeholder para apagar
+        function apagarPlano(id) {
+            if (confirm('Tem a certeza que deseja apagar este plano?')) {
+                alert('Funcionalidade de remoção em desenvolvimento');
+            }
+        }
+
+        // Fechar modal ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalPlano');
+            if (event.target == modal) {
+                fecharModalPlano();
+            }
+        };
+    </script>
 </body>
 </html>

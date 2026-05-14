@@ -50,6 +50,20 @@
         </div>
     </div>
 
+    <!-- Cursos Section -->
+    <div class="container-fluid py-5" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="text-center mb-5" style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">
+                <i class="fas fa-graduation-cap"></i> Cursos Disponíveis
+            </h2>
+            <div id="cursosList" class="row g-4">
+                <div class="col-12 text-center" style="padding: 3rem; color: #999;">
+                    Carregando cursos...
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Features -->
     <div class="container-fluid py-5">
         <div class="row g-4">
@@ -118,17 +132,49 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        (function(){
-            // Gerar URL de acesso
+        // Carregar cursos
+        async function carregarCursos() {
+            try {
+                const response = await fetch('/api/cursos');
+                const cursos = await response.json();
+                const lista = document.getElementById('cursosList');
+                
+                if (!cursos || cursos.length === 0) {
+                    lista.innerHTML = '<div class="col-12 text-center" style="padding: 3rem; color: #999;">Nenhum curso disponível</div>';
+                    return;
+                }
+                
+                lista.innerHTML = cursos.map(c => `
+                    <div class="col-md-6 col-lg-3">
+                        <div class="feature-card" style="text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 2rem;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem; color: var(--primary-color);">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <h5 style="margin-bottom: 1rem; font-weight: 700;">${c.Nome || 'N/A'}</h5>
+                            <p style="font-size: 0.95rem; color: #666; flex-grow: 1;">${c.descricao || 'Curso profissionalizante'}</p>
+                            <div style="padding-top: 1rem; border-top: 1px solid #eee; margin-top: 1rem;">
+                                <small style="color: var(--primary-color); font-weight: 600;">
+                                    ${c.ativo ? '✓ Ativo' : '✗ Inativo'}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao carregar cursos:', error);
+                document.getElementById('cursosList').innerHTML = '<div class="col-12 text-center" style="padding: 3rem; color: #d32f2f;">Erro ao carregar cursos</div>';
+            }
+        }
+
+        // Gerar QR Code
+        function gerarQRCode() {
             var protocolo = window.location.protocol;
             var host = window.location.hostname;
             var porta = window.location.port;
             var url_rede = protocolo + '//' + host + (porta ? ':' + porta : '') + '/login';
             
-            // Mostrar URL
             document.getElementById('qr-url-text').textContent = url_rede;
             
-            // Gerar QR Code usando API QRServer
             var size = 200;
             var img = document.createElement('img');
             img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&data=' + encodeURIComponent(url_rede);
@@ -138,7 +184,13 @@
             img.style.padding = '10px';
             img.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
             document.getElementById('qrcode').appendChild(img);
-        })();
+        }
+
+        // Carregar ao abrir página
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarCursos();
+            gerarQRCode();
+        });
     </script>
 </body>
 </html>
