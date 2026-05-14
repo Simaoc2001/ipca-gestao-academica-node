@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerir Cursos - IPCA Gestão Académica</title>
+    <link rel="stylesheet" href="/estilos.css">
+    <style>
+        .admin-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .admin-title { font-size: 2rem; margin-bottom: 2rem; color: var(--primary-color); }
+        .admin-content { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        .btn-group { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 4px; background-color: var(--primary-color); color: white; cursor: pointer; font-weight: 600; }
+        .btn:hover { background-color: var(--primary-color-hover); transform: translateY(-2px); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #f5f5f5; padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+        td { padding: 1rem; border-bottom: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <banner class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-circle">IP</div>
+                <h1>IPCA <span class="header-title">Painel Administrativo</span></h1>
+            </div>
+            <nav class="nav-main">
+                <a href="/admin/dashboard">Dashboard</a>
+                <a href="/logout" class="nav-logout">Sair</a>
+            </nav>
+        </div>
+    </banner>
+    <div class="admin-container">
+        <h2 class="admin-title">Gerir Cursos</h2>
+        <div class="admin-content">
+            <div class="btn-group">
+                <button class="btn">+ Novo Curso</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="cursosList">
+                    <tr><td colspan="4" style="text-align: center;">Carregando cursos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <footer class="footer">
+        <p>© 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+    </footer>
+    <script>
+        async function carregarCursos() {
+            try {
+                const response = await fetch('/api/cursos');
+                const cursos = await response.json();
+                const lista = document.getElementById('cursosList');
+                if (!cursos || cursos.length === 0) {
+                    lista.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nenhum curso registado</td></tr>';
+                    return;
+                }
+                lista.innerHTML = cursos.map(c => `
+                    <tr>
+                        <td><strong>${c.Nome || 'N/A'}</strong></td>
+                        <td>${c.descricao || 'N/A'}</td>
+                        <td>${c.ativo ? '✓ Ativo' : '✗ Inativo'}</td>
+                        <td><button style="padding: 0.4rem 0.8rem; background-color: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer;">Editar</button></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                document.getElementById('cursosList').innerHTML = '<tr><td colspan="4" style="text-align: center; color: #d32f2f;">Erro ao carregar dados</td></tr>';
+            }
+        }
+        carregarCursos();
+    </script>
+</body>
+</html>

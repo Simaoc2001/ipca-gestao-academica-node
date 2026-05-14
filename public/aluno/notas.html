@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas - IPCA Gestão Académica</title>
+    <link rel="stylesheet" href="/estilos.css">
+    <style>
+        .notas-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .notas-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+        }
+
+        .notas-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .notas-table thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .notas-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .notas-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .notas-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .nota-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .nota-baixa {
+            color: #d32f2f;
+        }
+
+        .nota-media {
+            color: #f57c00;
+        }
+
+        .nota-boa {
+            color: #388e3c;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <banner class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-circle">IP</div>
+                <h1>IPCA <span class="header-title">Minhas Notas</span></h1>
+            </div>
+            <nav class="nav-main">
+                <a href="/aluno/dashboard">Dashboard</a>
+                <a href="/aluno/editar-ficha">Ficha</a>
+                <a href="/aluno/pedidos-matricula">Pedidos</a>
+                <a href="/aluno/notas" class="active">Notas</a>
+                <a href="/logout" class="nav-logout">Sair</a>
+            </nav>
+        </div>
+    </banner>
+
+    <div class="notas-container">
+        <h2 class="notas-title">Minhas Notas</h2>
+
+        <div class="stats-container" id="statsContainer" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-label">Total de Notas</div>
+                <div class="stat-value" id="totalNotas">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Média</div>
+                <div class="stat-value" id="media">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Melhor Nota</div>
+                <div class="stat-value" id="melhor">-</div>
+            </div>
+        </div>
+
+        <div id="notasContent">
+            <table class="notas-table">
+                <thead>
+                    <tr>
+                        <th>Disciplina</th>
+                        <th>Época</th>
+                        <th>Nota</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody id="notasList">
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 2rem;">
+                            Carregando notas...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        function getNotaClass(nota) {
+            if (nota < 10) return 'nota-baixa';
+            if (nota < 14) return 'nota-media';
+            return 'nota-boa';
+        }
+
+        async function carregarNotas() {
+            try {
+                const response = await fetch('/api/aluno/notas-recentes?limit=100');
+                const notas = await response.json();
+
+                const notasList = document.getElementById('notasList');
+                
+                if (!notas || notas.length === 0) {
+                    notasList.innerHTML = `
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📊</div>
+                                    <p>Nenhuma nota registada</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Calcular estatísticas
+                const valores = notas.map(n => parseFloat(n.nota || 0)).filter(n => n > 0);
+                if (valores.length > 0) {
+                    const total = valores.length;
+                    const media = (valores.reduce((a, b) => a + b, 0) / total).toFixed(2);
+                    const melhor = Math.max(...valores);
+
+                    document.getElementById('totalNotas').textContent = total;
+                    document.getElementById('media').textContent = media;
+                    document.getElementById('melhor').textContent = melhor;
+                    document.getElementById('statsContainer').style.display = 'grid';
+                }
+
+                notasList.innerHTML = notas.map(nota => `
+                    <tr>
+                        <td>${nota.disciplina_nome || 'N/A'}</td>
+                        <td>${nota.epoca_nome || 'N/A'}</td>
+                        <td>
+                            <span class="nota-value ${getNotaClass(parseFloat(nota.nota))}">
+                                ${nota.nota || 'N/A'}
+                            </span>
+                        </td>
+                        <td>${new Date(nota.data_pauta).toLocaleDateString('pt-PT')}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao carregar notas:', error);
+                document.getElementById('notasList').innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #d32f2f;">
+                            Erro ao carregar notas. Tente novamente.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        carregarNotas();
+    </script>
+</body>
+</html>

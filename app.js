@@ -191,12 +191,82 @@ app.get('/aluno/editar-ficha', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'ficha.html'));
 });
 
+app.get('/aluno/pedidos-matricula', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ALUNO') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'aluno', 'pedidos.html'));
+});
+
+app.get('/aluno/notas', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ALUNO') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'aluno', 'notas.html'));
+});
+
+// Rota de Logout
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/login');
+    });
+});
+
 // Rotas do Admin
 app.get('/admin/dashboard', requireAuth, (req, res) => {
     if (req.session.user.papel !== 'ADMIN' && req.session.user.papel !== 'FUNCIONARIO') {
         return res.redirect('/login');
     }
     res.sendFile(path.join(__dirname, 'public', 'admin', 'dashboard.html'));
+});
+
+app.get('/admin/gerir-utilizadores', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ADMIN') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'gerir-utilizadores.html'));
+});
+
+app.get('/admin/gerir-cursos', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ADMIN') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'gerir-cursos.html'));
+});
+
+app.get('/admin/gerir-disciplinas', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ADMIN') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'gerir-disciplinas.html'));
+});
+
+app.get('/admin/gerir-planos', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ADMIN') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'gerir-planos.html'));
+});
+
+app.get('/admin/validar-fichas', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ADMIN') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'validar-fichas.html'));
+});
+
+app.get('/admin/gerir-pedidos', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ADMIN' && req.session.user.papel !== 'FUNCIONARIO') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'gerir-pedidos.html'));
+});
+
+app.get('/admin/gerir-pautas', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ADMIN' && req.session.user.papel !== 'FUNCIONARIO') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'gerir-pautas.html'));
 });
 
 app.get('/cursos', requireAuth, (req, res) => {
@@ -542,6 +612,35 @@ app.get('/api/aluno/notas-recentes', requireAuth, async (req, res) => {
             disciplina_nome: n.disciplina && n.disciplina.length > 0 ? n.disciplina[0].Nome_disc : 'N/A',
             nota: n.nota,
             data_lancamento: n.data_lancamento
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET - Todos os pedidos de matrícula (para admin)
+app.get('/api/pedidos', requireAuth, async (req, res) => {
+    try {
+        const pedidos = await db.collection('pedidos_matricula')
+            .aggregate([
+                {
+                    $lookup: {
+                        from: 'disciplinas',
+                        localField: 'disciplina_id',
+                        foreignField: 'ID',
+                        as: 'disciplina'
+                    }
+                },
+                { $sort: { data_pedido: -1 } }
+            ])
+            .toArray();
+        
+        res.json(pedidos.map(p => ({
+            id: p._id,
+            aluno_nome: p.login_aluno,
+            disciplina_nome: p.disciplina && p.disciplina.length > 0 ? p.disciplina[0].Nome_disc : 'N/A',
+            status: p.estado || 'Pendente',
+            data_pedido: p.data_pedido
         })));
     } catch (err) {
         res.status(500).json({ error: err.message });

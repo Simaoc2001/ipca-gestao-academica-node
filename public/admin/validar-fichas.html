@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validar Fichas - IPCA Gestão Académica</title>
+    <link rel="stylesheet" href="/estilos.css">
+    <style>
+        .admin-container { max-width: 1000px; margin: 2rem auto; padding: 2rem; }
+        .admin-title { font-size: 2rem; margin-bottom: 2rem; color: var(--primary-color); }
+        .admin-content { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #f5f5f5; padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+        td { padding: 1rem; border-bottom: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <banner class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-circle">IP</div>
+                <h1>IPCA <span class="header-title">Painel Administrativo</span></h1>
+            </div>
+            <nav class="nav-main">
+                <a href="/admin/dashboard">Dashboard</a>
+                <a href="/logout" class="nav-logout">Sair</a>
+            </nav>
+        </div>
+    </banner>
+    <div class="admin-container">
+        <h2 class="admin-title">Validar Fichas de Aluno</h2>
+        <div class="admin-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Aluno</th>
+                        <th>Email</th>
+                        <th>Curso</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="fichasList">
+                    <tr><td colspan="5" style="text-align: center;">Carregando fichas...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <footer class="footer">
+        <p>© 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+    </footer>
+    <script>
+        async function carregarFichas() {
+            try {
+                const response = await fetch('/api/alunos');
+                const alunos = await response.json();
+                const lista = document.getElementById('fichasList');
+                if (!alunos || alunos.length === 0) {
+                    lista.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhuma ficha registada</td></tr>';
+                    return;
+                }
+                lista.innerHTML = alunos.map(a => `
+                    <tr>
+                        <td><strong>${a.nome || a.login}</strong></td>
+                        <td>${a.email || 'N/A'}</td>
+                        <td>N/A</td>
+                        <td>Pendente</td>
+                        <td><button style="padding: 0.4rem 0.8rem; background-color: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">Validar</button></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                document.getElementById('fichasList').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #d32f2f;">Erro ao carregar dados</td></tr>';
+            }
+        }
+        carregarFichas();
+    </script>
+</body>
+</html>

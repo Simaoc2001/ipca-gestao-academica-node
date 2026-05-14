@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos de Matrícula - IPCA Gestão Académica</title>
+    <link rel="stylesheet" href="/estilos.css">
+    <style>
+        .admin-container { max-width: 1000px; margin: 2rem auto; padding: 2rem; }
+        .admin-title { font-size: 2rem; margin-bottom: 2rem; color: var(--primary-color); }
+        .admin-content { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #f5f5f5; padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+        td { padding: 1rem; border-bottom: 1px solid #ddd; }
+        .status-badge { display: inline-block; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.85rem; }
+        .status-aprovado { background-color: #d4edda; color: #155724; }
+        .status-pendente { background-color: #fff3cd; color: #856404; }
+        .status-rejeitado { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <banner class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-circle">IP</div>
+                <h1>IPCA <span class="header-title">Painel Administrativo</span></h1>
+            </div>
+            <nav class="nav-main">
+                <a href="/admin/dashboard">Dashboard</a>
+                <a href="/logout" class="nav-logout">Sair</a>
+            </nav>
+        </div>
+    </banner>
+    <div class="admin-container">
+        <h2 class="admin-title">Pedidos de Matrícula</h2>
+        <div class="admin-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Aluno</th>
+                        <th>Disciplina</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="pedidosList">
+                    <tr><td colspan="5" style="text-align: center;">Carregando pedidos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <footer class="footer">
+        <p>© 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+    </footer>
+    <script>
+        async function carregarPedidos() {
+            try {
+                const response = await fetch('/api/pedidos');
+                const pedidos = await response.json();
+                const lista = document.getElementById('pedidosList');
+                if (!pedidos || pedidos.length === 0) {
+                    lista.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum pedido registado</td></tr>';
+                    return;
+                }
+                lista.innerHTML = pedidos.map(p => `
+                    <tr>
+                        <td>${p.aluno_nome || 'N/A'}</td>
+                        <td>${p.disciplina_nome || 'N/A'}</td>
+                        <td>${new Date(p.data_pedido).toLocaleDateString('pt-PT')}</td>
+                        <td><span class="status-badge status-${p.status?.toLowerCase() || 'pendente'}">${p.status || 'Pendente'}</span></td>
+                        <td><button style="padding: 0.4rem 0.8rem; background-color: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer;">Avaliar</button></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                document.getElementById('pedidosList').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #d32f2f;">Erro ao carregar dados</td></tr>';
+            }
+        }
+        carregarPedidos();
+    </script>
+</body>
+</html>

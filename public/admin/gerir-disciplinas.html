@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerir Disciplinas - IPCA Gestão Académica</title>
+    <link rel="stylesheet" href="/estilos.css">
+    <style>
+        .admin-container { max-width: 1000px; margin: 2rem auto; padding: 2rem; }
+        .admin-title { font-size: 2rem; margin-bottom: 2rem; color: var(--primary-color); }
+        .admin-content { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        .btn-group { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 4px; background-color: var(--primary-color); color: white; cursor: pointer; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #f5f5f5; padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+        td { padding: 1rem; border-bottom: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <banner class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-circle">IP</div>
+                <h1>IPCA <span class="header-title">Painel Administrativo</span></h1>
+            </div>
+            <nav class="nav-main">
+                <a href="/admin/dashboard">Dashboard</a>
+                <a href="/logout" class="nav-logout">Sair</a>
+            </nav>
+        </div>
+    </banner>
+    <div class="admin-container">
+        <h2 class="admin-title">Gerir Disciplinas</h2>
+        <div class="admin-content">
+            <div class="btn-group">
+                <button class="btn">+ Nova Disciplina</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="disciplinasList">
+                    <tr><td colspan="3" style="text-align: center;">Carregando disciplinas...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <footer class="footer">
+        <p>© 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+    </footer>
+    <script>
+        async function carregarDisciplinas() {
+            try {
+                const response = await fetch('/api/disciplinas');
+                const disciplinas = await response.json();
+                const lista = document.getElementById('disciplinasList');
+                if (!disciplinas || disciplinas.length === 0) {
+                    lista.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhuma disciplina registada</td></tr>';
+                    return;
+                }
+                lista.innerHTML = disciplinas.map(d => `
+                    <tr>
+                        <td>${d.ID}</td>
+                        <td><strong>${d.Nome_disc || 'N/A'}</strong></td>
+                        <td><button style="padding: 0.4rem 0.8rem; background-color: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer;">Editar</button></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                document.getElementById('disciplinasList').innerHTML = '<tr><td colspan="3" style="text-align: center; color: #d32f2f;">Erro ao carregar dados</td></tr>';
+            }
+        }
+        carregarDisciplinas();
+    </script>
+</body>
+</html>
