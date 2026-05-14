@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Aluno - IPCA Gestão Académica</title>
+    <link rel="stylesheet" href="/estilos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-brand">
+                <div class="brand-icon">IP</div>
+                <h1>IPCA <small>Painel do Aluno</small></h1>
+            </div>
+            <nav>
+                <a href="/aluno/editar-ficha">Ficha</a>
+                <a href="/aluno/pedidos-matricula">Pedidos</a>
+                <a href="/aluno/notas">Notas</a>
+                <a href="/logout" class="btn btn-sm">Sair</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <h2 id="saudacao"></h2>
+            <p id="subtitulo"></p>
+        </div>
+
+        <div id="mensagens"></div>
+
+        <!-- Estatísticas do Aluno -->
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <!-- Dados da Ficha -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-file-alt"></i> Minha Ficha</h3>
+            </div>
+            <div class="card-body">
+                <div id="fichaContent"></div>
+            </div>
+        </div>
+
+        <!-- Últimos Pedidos -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h3><i class="fas fa-list"></i> Pedidos de Matrícula Recentes</h3>
+                <a href="/aluno/pedidos-matricula" class="btn btn-sm">Ver Tudo</a>
+            </div>
+            <div class="card-body">
+                <div id="pedidosContent"></div>
+            </div>
+        </div>
+
+        <!-- Últimas Notas -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h3><i class="fas fa-graduation-cap"></i> Últimas Notas</h3>
+                <a href="/aluno/notas" class="btn btn-sm">Ver Tudo</a>
+            </div>
+            <div class="card-body">
+                <div id="notasContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const sessaoResponse = await fetch('/api/sessao');
+                const user = await sessaoResponse.json();
+
+                // Saudação com hora do dia
+                const hora = new Date().getHours();
+                let saudacao = 'Bom dia';
+                if (hora >= 12 && hora < 19) saudacao = 'Boa tarde';
+                else if (hora >= 19) saudacao = 'Boa noite';
+
+                const primeiroNome = user.nome ? user.nome.split(' ')[0] : user.login;
+                document.getElementById('saudacao').textContent = `${saudacao}, ${primeiroNome}!`;
+                document.getElementById('subtitulo').textContent = 'Bem-vindo ao seu painel académico';
+
+                // Carregar ficha
+                await carregarFicha(user.login);
+
+                // Carregar dados para exibição
+                await carregarDados(user.login);
+            } catch (error) {
+                console.error('Erro:', error);
+                window.location.href = '/login';
+            }
+        });
+
+        async function carregarFicha(login) {
+            try {
+                const response = await fetch('/api/ficha');
+                const ficha = await response.json();
+
+                if (!ficha.nome) {
+                    // Ficha incompleta, mostrar aviso
+                    document.getElementById('fichaContent').innerHTML = `
+                        <div class="aviso" style="background:#fef3c7; border-left:4px solid #f59e0b; color:#92400e; padding:1rem 1.25rem; border-radius:0 8px 8px 0; margin-bottom:1.5rem;">
+                            ⚠️ Sua ficha está incompleta. <a href="/aluno/editar-ficha?obrigatorio=1">Complete agora</a>
+                        </div>
+                    `;
+                } else {
+                    let fichaHTML = `
+                        <div style="display: grid; grid-template-columns: 100px 1fr; gap: 2rem; align-items: start;">
+                    `;
+
+                    // Foto
+                    if (ficha.foto) {
+                        fichaHTML += `
+                            <div>
+                                <img src="${ficha.foto}" alt="Foto" style="width: 100px; height: 100px; border-radius: 8px; object-fit: cover;">
+                            </div>
+                        `;
+                    }
+
+                    fichaHTML += `
+                        <div>
+                            <p><strong>Nome:</strong> ${ficha.nome || '-'}</p>
+                            <p><strong>Email:</strong> ${ficha.email || '-'}</p>
+                            <p><strong>Telefone:</strong> ${ficha.telefone || '-'}</p>
+                            <p><strong>Data Nascimento:</strong> ${ficha.dataNascimento ? new Date(ficha.dataNascimento).toLocaleDateString('pt-PT') : '-'}</p>
+                            <p><strong>Curso:</strong> ${ficha.curso || '-'}</p>
+                            <p><strong>Estado:</strong> <span class="badge ${ficha.estado === 'submetida' ? 'badge-success' : 'badge-secondary'}">${ficha.estado}</span></p>
+                            <a href="/aluno/editar-ficha" class="btn btn-sm" style="margin-top: 1rem;">Editar</a>
+                        </div>
+                    `;
+
+                    fichaHTML += '</div>';
+                    document.getElementById('fichaContent').innerHTML = fichaHTML;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar ficha:', error);
+            }
+        }
+
+        async function carregarDados(login) {
+            try {
+                // Carregar estatísticas
+                const statsResponse = await fetch(`/api/stats-aluno`);
+                const stats = await statsResponse.json();
+
+                let statsHTML = '';
+                if (stats.total_notas > 0) {
+                    statsHTML = `
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                            <div class="stat-info">
+                                <h4>Notas Registadas</h4>
+                                <p class="stat-value">${stats.total_notas}</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
+                            <div class="stat-info">
+                                <h4>Média</h4>
+                                <p class="stat-value">${stats.media || '0.0'}</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-star"></i></div>
+                            <div class="stat-info">
+                                <h4>Melhor Nota</h4>
+                                <p class="stat-value">${stats.melhor_nota || '0.0'}</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                            <div class="stat-info">
+                                <h4>Taxa de Aprovação</h4>
+                                <p class="stat-value">${stats.taxa_aprovacao}%</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                document.getElementById('statsGrid').innerHTML = statsHTML;
+
+                // Carregar pedidos recentes
+                const pedidosResponse = await fetch(`/api/aluno/pedidos-recentes`);
+                if (pedidosResponse.ok) {
+                    const pedidos = await pedidosResponse.json();
+                    let pedidosHTML = '';
+                    if (pedidos.length > 0) {
+                        pedidosHTML = '<table class="table"><tbody>';
+                        pedidos.slice(0, 3).forEach(p => {
+                            pedidosHTML += `
+                                <tr>
+                                    <td>${p.curso_nome || 'N/A'}</td>
+                                    <td><span class="badge badge-${p.estado === 'aprovado' ? 'success' : 'secondary'}">${p.estado}</span></td>
+                                    <td>${new Date(p.data_pedido).toLocaleDateString('pt-PT')}</td>
+                                </tr>
+                            `;
+                        });
+                        pedidosHTML += '</tbody></table>';
+                    } else {
+                        pedidosHTML = '<p style="color: var(--text-muted);">Nenhum pedido registado</p>';
+                    }
+                    document.getElementById('pedidosContent').innerHTML = pedidosHTML;
+                }
+
+                // Carregar notas recentes
+                const notasResponse = await fetch(`/api/aluno/notas-recentes`);
+                if (notasResponse.ok) {
+                    const notas = await notasResponse.json();
+                    let notasHTML = '';
+                    if (notas.length > 0) {
+                        notasHTML = '<table class="table"><tbody>';
+                        notas.slice(0, 5).forEach(n => {
+                            notasHTML += `
+                                <tr>
+                                    <td>${n.disciplina_nome || 'N/A'}</td>
+                                    <td><strong>${n.nota}</strong></td>
+                                    <td>${new Date(n.data_lancamento).toLocaleDateString('pt-PT')}</td>
+                                </tr>
+                            `;
+                        });
+                        notasHTML += '</tbody></table>';
+                    } else {
+                        notasHTML = '<p style="color: var(--text-muted);">Nenhuma nota registada</p>';
+                    }
+                    document.getElementById('notasContent').innerHTML = notasHTML;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+            }
+        }
+    </script>
+</body>
+</html>

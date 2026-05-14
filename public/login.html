@@ -80,7 +80,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    window.location.href = '/dashboard';
+                    // Redirecionar baseado no papel
+                    if (data.papel === 'ALUNO') {
+                        window.location.href = '/aluno/dashboard';
+                    } else {
+                        window.location.href = '/admin/dashboard';
+                    }
                 } else {
                     errorAlert.textContent = data.message;
                     errorAlert.classList.remove('d-none');

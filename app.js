@@ -110,7 +110,11 @@ app.post('/api/login', async (req, res) => {
             email: usuario.email
         };
 
-        res.json({ success: true, message: 'Login bem-sucedido!' });
+        res.json({ 
+            success: true, 
+            message: 'Login bem-sucedido!',
+            papel: usuario.papel
+        });
     } catch (err) {
         res.status(500).json({ error: 'Erro ao fazer login: ' + err.message });
     }
@@ -164,7 +168,35 @@ app.get('/contacto', (req, res) => {
 // ROTAS PRIVADAS - DASHBOARD
 // ============================================================
 app.get('/dashboard', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+    // Redirecionar baseado no papel
+    if (req.session.user.papel === 'ALUNO') {
+        res.redirect('/aluno/dashboard');
+    } else {
+        res.redirect('/admin/dashboard');
+    }
+});
+
+// Rotas do Aluno
+app.get('/aluno/dashboard', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ALUNO') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'aluno', 'dashboard.html'));
+});
+
+app.get('/aluno/editar-ficha', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ALUNO') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'ficha.html'));
+});
+
+// Rotas do Admin
+app.get('/admin/dashboard', requireAuth, (req, res) => {
+    if (req.session.user.papel !== 'ADMIN' && req.session.user.papel !== 'FUNCIONARIO') {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'dashboard.html'));
 });
 
 app.get('/cursos', requireAuth, (req, res) => {
@@ -426,6 +458,91 @@ app.get('/api/ficha', requireAuth, async (req, res) => {
             return res.json({});
         }
         res.json(ficha);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET - Estatísticas do aluno
+app.get('/api/stats-aluno', requireAuth, async (req, res) => {
+    try {
+        const login = req.session.user.login;
+        const notas = await db.collection('notas').find({ aluno_login: login }).toArray();
+        
+        const total = notas.length;
+        const media = total > 0 ? (notas.reduce((sum, n) => sum + (n.nota || 0), 0) / total).toFixed(1) : 0;
+        const melhor = total > 0 ? Math.max(...notas.map(n => n.nota || 0)).toFixed(1) : 0;
+        const aprovadas = notas.filter(n => n.nota >= 9.5).length;
+        const taxa = total > 0 ? Math.round((aprovadas / total) * 100) : 0;
+        
+        res.json({
+            total_notas: total,
+            media: media,
+            melhor_nota: melhor,
+            taxa_aprovacao: taxa
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET - Pedidos recentes do aluno
+app.get('/api/aluno/pedidos-recentes', requireAuth, async (req, res) => {
+    try {
+        const login = req.session.user.login;
+        const pedidos = await db.collection('pedidos_matricula')
+            .aggregate([
+                { $match: { login_aluno: login } },
+                {
+                    $lookup: {
+                        from: 'cursos',
+                        localField: 'curso_id',
+                        foreignField: 'ID',
+                        as: 'curso'
+                    }
+                },
+                { $sort: { data_pedido: -1 } },
+                { $limit: 5 }
+            ])
+            .toArray();
+        
+        res.json(pedidos.map(p => ({
+            id: p._id,
+            curso_nome: p.curso && p.curso.length > 0 ? p.curso[0].Nome : 'N/A',
+            estado: p.estado,
+            data_pedido: p.data_pedido
+        })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET - Notas recentes do aluno
+app.get('/api/aluno/notas-recentes', requireAuth, async (req, res) => {
+    try {
+        const login = req.session.user.login;
+        const notas = await db.collection('notas')
+            .aggregate([
+                { $match: { aluno_login: login } },
+                {
+                    $lookup: {
+                        from: 'disciplinas',
+                        localField: 'disciplina_id',
+                        foreignField: 'ID',
+                        as: 'disciplina'
+                    }
+                },
+                { $sort: { data_lancamento: -1 } },
+                { $limit: 5 }
+            ])
+            .toArray();
+        
+        res.json(notas.map(n => ({
+            id: n._id,
+            disciplina_nome: n.disciplina && n.disciplina.length > 0 ? n.disciplina[0].Nome_disc : 'N/A',
+            nota: n.nota,
+            data_lancamento: n.data_lancamento
+        })));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

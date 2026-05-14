@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - IPCA Gestão Académica</title>
+    <link rel="stylesheet" href="/estilos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-brand">
+                <div class="brand-icon">IP</div>
+                <h1>IPCA <small>Painel Administrativo</small></h1>
+            </div>
+            <nav>
+                <span id="userInfo"></span>
+                <a href="/logout" class="btn btn-sm">Sair</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>Dashboard</h2>
+            <p>Bem-vindo ao painel de gestão. Selecione uma opção abaixo.</p>
+        </div>
+
+        <div id="adminMenu"></div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 IPCA - Instituto Politécnico do Cávado e do Ave. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/sessao');
+                const user = await response.json();
+                
+                document.getElementById('userInfo').innerHTML = `
+                    <span class="user-name">${user.login}</span>
+                    <span class="user-role">${user.papel}</span>
+                `;
+
+                const menuHTML = generateMenu(user.papel);
+                document.getElementById('adminMenu').innerHTML = menuHTML;
+            } catch (error) {
+                console.error('Erro:', error);
+                window.location.href = '/login';
+            }
+        });
+
+        function generateMenu(papel) {
+            let html = '';
+
+            if (papel === 'ADMIN') {
+                html += `
+                    <h3>Gestão do Sistema</h3>
+                    <div class="dashboard-buttons">
+                        <a href="/admin/gerir-utilizadores" class="btn"><i class="fas fa-users"></i> Gerir Utilizadores</a>
+                        <a href="/admin/gerir-cursos" class="btn"><i class="fas fa-graduation-cap"></i> Gerir Cursos</a>
+                        <a href="/admin/gerir-disciplinas" class="btn"><i class="fas fa-book"></i> Gerir Disciplinas</a>
+                        <a href="/admin/gerir-planos" class="btn"><i class="fas fa-tasks"></i> Planos de Estudo</a>
+                        <a href="/admin/validar-fichas" class="btn"><i class="fas fa-check-circle"></i> Validar Fichas</a>
+                    </div>
+                `;
+            } else if (papel === 'FUNCIONARIO') {
+                html += `
+                    <h3>Serviços Académicos</h3>
+                    <div class="dashboard-buttons">
+                        <a href="/admin/gerir-pedidos" class="btn"><i class="fas fa-file-alt"></i> Pedidos de Matrícula</a>
+                        <a href="/admin/gerir-pautas" class="btn"><i class="fas fa-table"></i> Pautas de Avaliação</a>
+                    </div>
+                `;
+            }
+
+            return html;
+        }
+    </script>
+</body>
+</html>

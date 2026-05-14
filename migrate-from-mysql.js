@@ -61,10 +61,11 @@ async function migrate() {
             const usuariosData = [];
             for (const u of users) {
                 // Mapear papel (grupo -> papel)
+                // grupo 1 = ADMIN, grupo 2 = ALUNO, grupo 3 = FUNCIONARIO
                 let papel = 'ALUNO';
                 if (u.grupo === 1) papel = 'ADMIN';
-                else if (u.grupo === 2) papel = 'FUNCIONARIO';
-                else if (u.grupo === 3) papel = 'ALUNO';
+                else if (u.grupo === 2) papel = 'ALUNO';
+                else if (u.grupo === 3) papel = 'FUNCIONARIO';
                 
                 // Gerar hash da password usando o login como password padrão
                 const passwordHash = await bcrypt.hash(u.login, 10);
